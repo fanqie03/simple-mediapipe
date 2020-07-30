@@ -4,7 +4,7 @@ from mediapipe.registration import CALCULATOR
 
 @CALCULATOR.register_module()
 class PassThroughCalculator(CalculatorBase):
-
+    @staticmethod
     def get_contract(cc):
         """输入跟输出个数一致"""
         return True
@@ -15,6 +15,7 @@ class PassThroughCalculator(CalculatorBase):
 
 @CALCULATOR.register_module()
 class MergeCalculator(CalculatorBase):
+    @staticmethod
     def get_contract(cc):
         """检查配置为多个输入，一个输出"""
 

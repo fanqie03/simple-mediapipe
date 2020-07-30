@@ -26,6 +26,9 @@ class CalculatorNode:
 
     def __str__(self):
         return 'node has {}'.format(self.calculator)
+    
+    def is_source(self):
+        ...
 
     class NodeStatus(Enum):
         """
