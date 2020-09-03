@@ -122,7 +122,7 @@ class CalculatorGraph:
 
     def initialize_profiler(self): ...
 
-    def start_run(self, extra_side_packet, stream_headers):
+    def start_run(self, extra_side_packet, stream_headers, blocking=True):
         # prepare run(extra_side_packet, stream_headers)
-        self._scheduler.start()
+        self._scheduler.start(blocking=blocking)
         return True

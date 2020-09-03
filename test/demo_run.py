@@ -20,6 +20,7 @@ def main():
     logger.info(graph_config)
     graph = CalculatorGraph()
     graph.initialize(graph_config)
+    graph.start_run(None, None)
 
 
 if __name__ == '__main__':
