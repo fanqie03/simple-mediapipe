@@ -1,3 +1,7 @@
+from queue import LifoQueue,Queue
+from collections import deque
+
+
 class Packet:
     def __init__(self, data=None, timestamp=0):
         self.data = data
@@ -28,3 +32,11 @@ if __name__ == '__main__':
         print(q.get())
         q.get()
     dq = queue.Queue()
+
+    q = deque()
+    q.extend([1,2,3])
+    print(q)
+    print(len(q))
+    print(q[0])
+    print(q.popleft())
+    # print()

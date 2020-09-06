@@ -36,6 +36,10 @@ class CalculatorGraph:
         self._node_df = pd.DataFrame(columns=self._node_df_columns)
         self._graph_df = pd.DataFrame(columns=self._graph_df_columns)
 
+
+    def add_task(self, task_fn):
+        self._scheduler.add_task(task_fn)
+
     def initialize(self, input_config, deps_config=[], side_packets={}):
         """
 

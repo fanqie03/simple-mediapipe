@@ -59,8 +59,9 @@ class Scheduler:
 
     def __init__(self, graph):
         self._graph = graph # The calculator graph to run.
-        # TODO
+        # TODO set length
         self._default_queue = Queue()     # Queue of nodes that need to be run.
+        # TODO set thread count
         self._default_executor = ThreadPoolExecutor(thread_name_prefix='mediapipe')
         self._scheduler_queues = []    # Holds pointers to all queues used by the scheduler, for convenience.
         self._non_default_queues = []  # Non-default scheduler queues, keyed by their executor names.
@@ -68,7 +69,8 @@ class Scheduler:
         self._handle_idle=False
         self.running = False
         self.exception_count = 0
-        self.max_exception = 100
+        # TODO config it
+        self.max_exception_count = 100
         #   // Number of queues which are not idle.
         #   // Note: this indicates two slightly different things:
         #   //  a. the number of queues which still have nodes running;
@@ -136,16 +138,21 @@ class Scheduler:
 
         def run_queue():
             while self.running:
+                logger.debug('try execute task, the task queue length is {}, '
+                             'thread pool worker queue length is {}'
+                             .format(self._default_queue.qsize, self._default_executor._work_queue.qsize))
                 task = self._default_queue.get(block=True)
                 try:
                     self._default_executor.submit(task)
                 except Exception as e:
                     self.exception_count += 1
                     logger.exception(e)
-                    logger.info('exception count is {}'.format(self.exception_count))
-                    if self.exception_count >= self.max_exception:
+                    logger.info('exception count is {}, max exception count is '
+                                .format(self.exception_count, self.max_exception_count))
+                    if self.exception_count >= self.max_exception_count:
                         logger.error("Excetion count >= Max exception count")
                         self.set_queues_running(False)
+                        # TODO exit?
 
         if not blocking:
             single_thread_pool = ThreadPoolExecutor()
@@ -154,6 +161,9 @@ class Scheduler:
             run_queue()
 
         self.handle_idle()
+
+    def add_task(self, task):
+        self._default_queue.put(task)
 
     def pause(self):
         """Pauses the scheduler.  Does nothing if Cancel has been called."""

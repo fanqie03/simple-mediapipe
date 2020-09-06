@@ -1,5 +1,6 @@
 from enum import Enum
 from mediapipe.registration import CALCULATOR, build_calculator
+from logzero import logger
 
 
 class CalculatorBase:
@@ -22,10 +23,42 @@ class CalculatorNode:
 
     def __init__(self, config):
         calculator_module = CALCULATOR.get(config.calculator)
-        self.calculator = calculator_module()
+        self.calculator_base = calculator_module()
+
+        self.input_streams = []
+        self.output_streams = []
+        self._default_context = CalculatorContext()
+        self._default_context_mutex = None
+        self._graph = None
+        # TODO init calculator contract and check calculator base.
+
+    def set_graph(self, graph):
+        self._graph = graph
+
+    def input_stream_listener(self):
+        self._graph.add_task(self.run)
+
+    def prepare_pakcage(self):
+        """input stream callback function
+        TODO first do it
+        1. check input stream timestamp is ready
+        2. get correct packet from input_stream to default_context
+        3. if default_context is ready, add self.run to schedule queue"""
+        pass
+
+    def run(self):
+        # TODO add lock in this function
+        if not self.prepare_pakcage():  # default_context没有准备好
+            return
+        self.calculator_base(self._default_context)
+        for stream in self.output_streams:
+            stream.propogate_mirrors()
+        # TODO if calculator base is complete, clear default context
+
+
 
     def __str__(self):
-        return 'node has {}'.format(self.calculator)
+        return 'node has {}'.format(self.calculator_base)
     
     def is_source(self):
         ...
@@ -64,27 +97,21 @@ class CalculatorNode:
         kSchedulingPending = 2
 
 
-class CalculatorRunner:
-    """The class for running the Calculator with given inputs and examining outputs."""
-
-
 class CalculatorContext:
     """
     // A CalculatorContext provides information about the graph it is running
     // inside of through a number of accessor functions: Inputs(), Outputs(),
     // InputSidePackets(), Options(), etc.
     """
+    def __init__(self):
+        self.input_stream_shards=[]
+        self.output_stream_shards=[]
 
+    def inputs(self):
+        return self.input_stream_shards
 
-class ClaculatorState:
-    """
-    // Holds data that the Calculator needs access to.  This data is not
-    // stored in Calculator directly since Calculator will be destroyed after
-    // every CalculatorGraph::Run() .  It is not stored in CalculatorNode
-    // because Calculator should not depend on CalculatorNode.  All
-    // information conveyed in this class is flowing from the CalculatorNode
-    // to the Calculator.
-    """
+    def outputs(self):
+        return self.output_stream_shards
 
 
 class CalculatorContract:
