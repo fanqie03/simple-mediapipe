@@ -140,7 +140,7 @@ class Scheduler:
             while self.running:
                 logger.debug('try execute task, the task queue length is {}, '
                              'thread pool worker queue length is {}'
-                             .format(self._default_queue.qsize, self._default_executor._work_queue.qsize))
+                             .format(self._default_queue.qsize(), self._default_executor._work_queue.qsize()))
                 task = self._default_queue.get(block=True)
                 try:
                     self._default_executor.submit(task)

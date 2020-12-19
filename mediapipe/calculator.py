@@ -1,6 +1,11 @@
 from enum import Enum
 from mediapipe.registration import CALCULATOR, build_calculator
 from logzero import logger
+import copy
+from .stream import InputStream, OutputStream
+from typing import List
+from threading import Lock
+from .collection import Collection
 
 
 class CalculatorBase:
@@ -25,12 +30,30 @@ class CalculatorNode:
         calculator_module = CALCULATOR.get(config.calculator)
         self.calculator_base = calculator_module()
 
-        self.input_streams = []
-        self.output_streams = []
-        self._default_context = CalculatorContext()
-        self._default_context_mutex = None
+        # TODO 1. only one 2. total 3. point which stream
+        self._default_run_condition = 'one or more'
+        self.timestamp = -1
+        self.input_streams = self.build_intput_streams(config)
+        self.output_streams = self.build_output_streams(config)
+        self._default_context = CalculatorContext(self)
+        self._default_context_mutex = Lock()
         self._graph = None
+        # self._scheduler = self._graph._scheduler
         # TODO init calculator contract and check calculator base.
+
+    def build_intput_streams(self, config) -> Collection:
+        arr = Collection()
+        for tag_name_index in config.input_stream:
+            stream = InputStream(self.input_stream_listener)
+            arr.add(tag_name_index, stream)
+        return arr
+
+    def build_output_streams(self, config) -> Collection:
+        arr = Collection()
+        for tag_name_index in config.output_stream:
+            stream = OutputStream()
+            arr.add(tag_name_index, stream)
+        return arr
 
     def set_graph(self, graph):
         self._graph = graph
@@ -44,24 +67,36 @@ class CalculatorNode:
         1. check input stream timestamp is ready
         2. get correct packet from input_stream to default_context
         3. if default_context is ready, add self.run to schedule queue"""
-        pass
+        if self._default_run_condition == 'one or more':
+            flag = False
+            for index, stream in enumerate(self.input_streams):
+                # deprecated some expire package
+                while len(stream) and stream.get().timestamp < self.timestamp:
+                    expire_package = stream.popleft()
+                    logger.warn('calculator [{}] deprecated some expire package [{}]'
+                                .format(self, expire_package))
+                if len(stream) and stream.get().timestamp >= self.timestamp:
+                    package = stream.popleft()
+                    self._default_context.inputs()[index].add_package(package)
+                    flag = True
+            return flag
 
     def run(self):
-        # TODO add lock in this function
-        if not self.prepare_pakcage():  # default_context没有准备好
-            return
-        self.calculator_base(self._default_context)
-        for stream in self.output_streams:
-            stream.propogate_mirrors()
-        # TODO if calculator base is complete, clear default context
-
-
+        with self._default_context_mutex:
+            # TODO add lock in this function
+            if not self.prepare_pakcage():  # default_context没有准备好
+                return
+            self.calculator_base(self._default_context)
+            for stream in self.output_streams:
+                stream.propagate_mirrors()
+            # if calculator base is complete, clear default context
+            self._default_context.clear()
 
     def __str__(self):
-        return 'node has {}'.format(self.calculator_base)
+        return 'node has {}'.format(self.calculator_base.__class__)
     
     def is_source(self):
-        ...
+        return len(self.input_streams) == 0 and len(self.output_streams) != 0
 
     class NodeStatus(Enum):
         """
@@ -103,14 +138,20 @@ class CalculatorContext:
     // inside of through a number of accessor functions: Inputs(), Outputs(),
     // InputSidePackets(), Options(), etc.
     """
-    def __init__(self):
-        self.input_stream_shards=[]
-        self.output_stream_shards=[]
+    def __init__(self, node:CalculatorNode):
+        # mirror of calculator inputs
+        self.input_stream_shards = copy.deepcopy(node.input_streams)
+        # mirror of calculator outputs
+        self.output_stream_shards = copy.deepcopy(node.output_streams)
 
-    def inputs(self):
+    def clear(self):
+        for stream in self.input_stream_shards:
+            stream.clear()
+
+    def inputs(self) -> Collection:
         return self.input_stream_shards
 
-    def outputs(self):
+    def outputs(self) -> Collection:
         return self.output_stream_shards
 
 

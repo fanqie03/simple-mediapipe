@@ -16,6 +16,21 @@ class Packet:
     def __lt__(self, other):
         return self.timestamp < other.timestamp
 
+    def __le__(self, other):
+        return self.timestamp <= other.timestamp
+
+    def __gt__(self, other):
+        return self.timestamp > other.timestamp
+
+    def __ge__(self, other):
+        return self.timestamp >= other.timestamp
+
+    def __eq__(self, other):
+        return self.timestamp == other.timestamp
+
+    def __ne__(self, other):
+        return self.timestamp != other.timestamp
+
 
 if __name__ == '__main__':
 
