@@ -2,12 +2,71 @@ from enum import Enum
 import queue
 from collections import deque
 from .list import List
+from types import MethodType, FunctionType
+from logzero import logger
+import sys
+from .collection import parse_tag_index_name
 
 
 class NodeReadiness(Enum):
     kNotReady = 0
     kReadyForProcess = 1
     kReadyForClose = 2
+
+
+class Stream:
+    def __init__(self, tag_index_name, downstream=None, max_size=100):
+        self.max_size = max_size
+        self._queue = List(self.max_size)
+        # single callback or list of Stream
+        self.downstream = downstream
+        self.tag_index_name = tag_index_name
+        self.tag, self.index, self.name = parse_tag_index_name(self.tag_index_name)
+
+    def add_packet(self, packet):
+        self._queue.push_last(packet)
+
+    def add_downstream(self, downstream):
+        if isinstance(downstream, (MethodType, FunctionType)) and self.downstream is None:
+            self.downstream = downstream
+        elif not isinstance(downstream, (list, tuple)):
+            downstream = [downstream]
+            if not isinstance(downstream[0], Stream):
+                logger.error('downstream should be Stream or Method')
+                sys.exit(1)
+            if self.downstream is None:
+                self.downstream = []
+            self.downstream.extend(downstream)
+        else:
+            logger.error('unknown situation')
+
+    def propagate_downstream(self):
+        if isinstance(self.downstream, (MethodType, FunctionType)):
+            self.downstream()
+        elif len(self.downstream):
+            packet = self._queue.pop_first()
+            for downstream in self.downstream:
+                downstream.add_packet(packet)
+                # recursive
+                downstream.propagate_downstream()
+
+    def get(self):
+        """get and return item"""
+        return self._queue.get_first()
+
+    def __len__(self):
+        return len(self._queue)
+
+    def popleft(self):
+        """get and pop left item in queue"""
+        return self._queue.pop_first()
+
+    def clear(self):
+        self._queue.clear()
+
+    def __deepcopy__(self, memodict={}):
+        copyobj = type(self)(self.tag_index_name, self.downstream, self.max_size)
+        return copyobj
 
 
 class InputStream:

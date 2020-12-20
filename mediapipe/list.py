@@ -3,6 +3,7 @@ from logzero import logger
 
 
 class List:
+    # TODO block
     def __init__(self, max_size=100):
         self.arr_lock = threading.Lock()
         self.max_size = max_size

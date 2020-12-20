@@ -33,13 +33,17 @@ class CalculatorNode:
         # TODO 1. only one 2. total 3. point which stream
         self._default_run_condition = 'one or more'
         self.timestamp = -1
-        self.input_streams = self.build_intput_streams(config)
-        self.output_streams = self.build_output_streams(config)
-        self._default_context = CalculatorContext(self)
+        self.input_streams = Collection()
+        self.output_streams = Collection()
+        self._default_context = None
         self._default_context_mutex = Lock()
         self._graph = None
         # self._scheduler = self._graph._scheduler
         # TODO init calculator contract and check calculator base.
+
+    def init_context(self):
+        # when stream init, call this function
+        self._default_context = CalculatorContext(self)
 
     def build_intput_streams(self, config) -> Collection:
         arr = Collection()
