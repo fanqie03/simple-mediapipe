@@ -142,17 +142,18 @@ class Scheduler:
                              'thread pool worker queue length is {}'
                              .format(self._default_queue.qsize(), self._default_executor._work_queue.qsize()))
                 task = self._default_queue.get(block=True)
-                try:
-                    self._default_executor.submit(task)
-                except Exception as e:
-                    self.exception_count += 1
-                    logger.exception(e)
-                    logger.info('exception count is {}, max exception count is '
-                                .format(self.exception_count, self.max_exception_count))
-                    if self.exception_count >= self.max_exception_count:
-                        logger.error("Excetion count >= Max exception count")
-                        self.set_queues_running(False)
-                        # TODO exit?
+                self._default_executor.submit(task)
+                # try:
+                #     self._default_executor.submit(task)
+                # except Exception as e:
+                #     self.exception_count += 1
+                #     logger.exception(e)
+                #     logger.info('exception count is {}, max exception count is {}'
+                #                 .format(self.exception_count, self.max_exception_count))
+                #     if self.exception_count >= self.max_exception_count:
+                #         logger.error("Excetion count >= Max exception count")
+                #         self.set_queues_running(False)
+                #         # TODO exit?
 
         if not blocking:
             single_thread_pool = ThreadPoolExecutor()

@@ -23,10 +23,13 @@ class CalculatorBase:
     def close(self, cc):
         """释放资源"""
 
+    def __str__(self):
+        return self.__class__.__name__
+
 
 class CalculatorNode:
 
-    def __init__(self, config):
+    def __init__(self, graph, config):
         calculator_module = CALCULATOR.get(config.calculator)
         self.calculator_base = calculator_module()
 
@@ -37,8 +40,10 @@ class CalculatorNode:
         self.output_streams = Collection()
         self._default_context = None
         self._default_context_mutex = Lock()
-        self._graph = None
+        self._graph = graph
         # self._scheduler = self._graph._scheduler
+        self.exception_count = 0
+        self.max_exception_count = 100
         # TODO init calculator contract and check calculator base.
 
     def init_context(self):
@@ -65,7 +70,7 @@ class CalculatorNode:
     def input_stream_listener(self):
         self._graph.add_task(self.run)
 
-    def prepare_pakcage(self):
+    def prepare_packet(self):
         """input stream callback function
         TODO first do it
         1. check input stream timestamp is ready
@@ -80,24 +85,36 @@ class CalculatorNode:
                     logger.warn('calculator [{}] deprecated some expire package [{}]'
                                 .format(self, expire_package))
                 if len(stream) and stream.get().timestamp >= self.timestamp:
-                    package = stream.popleft()
-                    self._default_context.inputs()[index].add_package(package)
+                    packet = stream.popleft()
+                    stream_mirror = self._default_context.inputs()[index]
+                    stream_mirror.add_packet(packet)
                     flag = True
             return flag
 
     def run(self):
         with self._default_context_mutex:
-            # TODO add lock in this function
-            if not self.prepare_pakcage():  # default_context没有准备好
-                return
-            self.calculator_base(self._default_context)
-            for stream in self.output_streams:
-                stream.propagate_mirrors()
-            # if calculator base is complete, clear default context
-            self._default_context.clear()
+            try:
+                logger.debug('{} execute!'.format(self))
+                if not self.prepare_packet():  # default_context没有准备好
+                    logger.debug('{} did not prepare'.format(self))
+                    return
+                self.calculator_base.process(self._default_context)
+                for stream in self._default_context.outputs():
+                    stream.propagate_downstream()
+                # if calculator base is complete, clear default context
+                self._default_context.clear()
+            except Exception as e:
+                self.exception_count += 1
+                logger.exception(e)
+                logger.info('exception count is {}, max exception count is {}'
+                            .format(self.exception_count, self.max_exception_count))
+                if self.exception_count >= self.max_exception_count:
+                    logger.error("Excetion count >= Max exception count")
+                    self.set_queues_running(False)
+                    # TODO exit?
 
     def __str__(self):
-        return 'node has {}'.format(self.calculator_base.__class__)
+        return 'Node {}'.format(self.calculator_base)
     
     def is_source(self):
         return len(self.input_streams) == 0 and len(self.output_streams) != 0

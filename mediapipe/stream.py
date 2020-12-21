@@ -8,6 +8,14 @@ import sys
 from .collection import parse_tag_index_name
 
 
+class StreamType:
+    INPUT_STREAM = "INPUT_STREAM"
+    OUTPUT_STREAM = "OUTPUT_STREAM"
+    INPUT_SIDE_PACKET = "INPUT_SIDE_PACKET"
+    OUTPUT_SIDE_PACKET = "OUTPUT_SIDE_PACKET"
+    GRAPH_INPUT_STREAM = "GRAPH_INPUT_STREAM"
+    GRAPH_OUTPUT_STREAM = "GRAPH_OUTPUT_STREAM"
+
 class NodeReadiness(Enum):
     kNotReady = 0
     kReadyForProcess = 1
@@ -15,13 +23,17 @@ class NodeReadiness(Enum):
 
 
 class Stream:
-    def __init__(self, tag_index_name, downstream=None, max_size=100):
+    def __init__(self, stream_type, tag_index_name, downstream=None, max_size=100):
         self.max_size = max_size
         self._queue = List(self.max_size)
         # single callback or list of Stream
         self.downstream = downstream
         self.tag_index_name = tag_index_name
+        self.stream_type = stream_type
         self.tag, self.index, self.name = parse_tag_index_name(self.tag_index_name)
+
+    def __str__(self):
+        return '{}:"{}", current queue size is {}'.format(self.stream_type, self.tag_index_name, len(self))
 
     def add_packet(self, packet):
         self._queue.push_last(packet)
@@ -41,7 +53,9 @@ class Stream:
             logger.error('unknown situation')
 
     def propagate_downstream(self):
-        if isinstance(self.downstream, (MethodType, FunctionType)):
+        if self.downstream is None:
+            return
+        elif isinstance(self.downstream, (MethodType, FunctionType)):
             self.downstream()
         elif len(self.downstream):
             packet = self._queue.pop_first()
@@ -65,7 +79,7 @@ class Stream:
         self._queue.clear()
 
     def __deepcopy__(self, memodict={}):
-        copyobj = type(self)(self.tag_index_name, self.downstream, self.max_size)
+        copyobj = type(self)(self.stream_type, self.tag_index_name, self.downstream, self.max_size)
         return copyobj
 
 

@@ -26,3 +26,4 @@ import simple_mediapipe as sm
 sm.use_config(config_file)
 sm.run()
 ```
+
