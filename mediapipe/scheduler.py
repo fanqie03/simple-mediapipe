@@ -143,6 +143,7 @@ class Scheduler:
                              .format(self._default_queue.qsize(), self._default_executor._work_queue.qsize()))
                 task = self._default_queue.get(block=True)
                 self._default_executor.submit(task)
+                # TODO, WILL THROW EXCEPTION WHEN SUBMIT TASK
                 # try:
                 #     self._default_executor.submit(task)
                 # except Exception as e:

@@ -2,7 +2,6 @@ from enum import Enum
 from mediapipe.registration import CALCULATOR, build_calculator
 from logzero import logger
 import copy
-from .stream import InputStream, OutputStream
 from typing import List
 from threading import Lock
 from .collection import Collection
@@ -50,20 +49,6 @@ class CalculatorNode:
         # when stream init, call this function
         self._default_context = CalculatorContext(self)
 
-    def build_intput_streams(self, config) -> Collection:
-        arr = Collection()
-        for tag_name_index in config.input_stream:
-            stream = InputStream(self.input_stream_listener)
-            arr.add(tag_name_index, stream)
-        return arr
-
-    def build_output_streams(self, config) -> Collection:
-        arr = Collection()
-        for tag_name_index in config.output_stream:
-            stream = OutputStream()
-            arr.add(tag_name_index, stream)
-        return arr
-
     def set_graph(self, graph):
         self._graph = graph
 
@@ -110,7 +95,7 @@ class CalculatorNode:
                             .format(self.exception_count, self.max_exception_count))
                 if self.exception_count >= self.max_exception_count:
                     logger.error("Excetion count >= Max exception count")
-                    self.set_queues_running(False)
+                    self._graph._scheduler.set_queues_running(False)
                     # TODO exit?
 
     def __str__(self):

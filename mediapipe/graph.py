@@ -1,5 +1,4 @@
 from .counter import BasicCounterFactory
-from .graph_profiler import *
 from .scheduler import Scheduler
 from logzero import logger
 from .graph_validation import validate_graph
@@ -172,9 +171,7 @@ class CalculatorGraph:
         self.output_streams = Collection()
 
         self._stream_df_columns = ['type', 'tag', 'index', 'name', 'tag_index_name', 'item', 'node_id', 'graph_id']
-
         self._node_df_columns = ['type', 'item', 'node_id', 'graph_id']
-
         self._graph_df_columns = ['type', 'item', 'graph_id', 'config']
 
         self._stream_df = pd.DataFrame(columns=self._stream_df_columns)
@@ -233,9 +230,13 @@ class CalculatorGraph:
         stream.add_packet(packet)
         stream.propagate_downstream()
 
-    def get_packet(self, tag=None, index=0):
+    def get_packet(self, tag=None, index=0, blocking=None):
         stream = self.output_streams.get(tag, index)
-        return stream.pop_left()
+        return stream.get(blocking)
+
+    def pop_packet(self, tag=None, index=0, blocking=None):
+        stream = self.output_streams.get(tag, index)
+        return stream.popleft(blocking)
 
     def initialize_executors(self): ...
 
