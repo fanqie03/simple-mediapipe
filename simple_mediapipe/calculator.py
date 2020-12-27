@@ -1,5 +1,5 @@
 from enum import Enum
-from mediapipe.registration import CALCULATOR, build_calculator
+from .registration import CALCULATOR, build_calculator
 from logzero import logger
 import copy
 from typing import List

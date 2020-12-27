@@ -1,9 +1,9 @@
 import mediapipe.framework.calculator_pb2 as calculator_pb2
 from google.protobuf import text_format
 import argparse
-from mediapipe.graph import CalculatorGraph
+from simple_mediapipe.graph import CalculatorGraph
 from logzero import logger
-from mediapipe.packet import Packet
+from simple_mediapipe.packet import Packet
 import time
 
 

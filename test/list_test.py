@@ -1,4 +1,4 @@
-from mediapipe.list import List
+from simple_mediapipe.list import List
 from logzero import logger
 import threading
 import time

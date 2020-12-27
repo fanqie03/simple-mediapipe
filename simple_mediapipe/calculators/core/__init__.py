@@ -1,5 +1,5 @@
-from mediapipe.calculator import CalculatorBase
-from mediapipe.registration import CALCULATOR
+from simple_mediapipe.calculator import CalculatorBase
+from simple_mediapipe.registration import CALCULATOR
 from logzero import logger
 
 
@@ -30,3 +30,12 @@ class MergeCalculator(CalculatorBase):
         """设置"""
 
     def process(self, cc): ...
+
+
+@CALCULATOR.register_module()
+class SourceCalculator(CalculatorBase):
+    def open(self, cc):
+        ...
+
+    def process(self, cc):
+        ...
