@@ -34,14 +34,14 @@ class SubGraph:
         streams = []
         for input_stream_pb in self.graph_pb.input_stream:
             tag, index, name = parse_tag_index_name(input_stream_pb)
-            stream = Stream(StreamType.GRAPH_INPUT_STREAM, input_stream_pb)
+            stream = Stream(StreamType.GRAPH_INPUT_STREAM, input_stream_pb, max_size=self.graph_pb.max_queue_size)
             self.graph_input_streams.add(input_stream_pb, stream)
             streams.append([StreamType.GRAPH_INPUT_STREAM, tag, index, name, input_stream_pb, stream, -1, 0])
 
         # graph output stream
         for output_stream_pb in self.graph_pb.output_stream:
             tag, index, name = parse_tag_index_name(output_stream_pb)
-            stream = Stream(StreamType.GRAPH_OUTPUT_STREAM, output_stream_pb)
+            stream = Stream(StreamType.GRAPH_OUTPUT_STREAM, output_stream_pb, max_size=self.graph_pb.max_queue_size)
             self.graph_output_streams.add(output_stream_pb, stream)
             streams.append([StreamType.GRAPH_OUTPUT_STREAM, tag, index, name, output_stream_pb, stream, -1, 0])
 
@@ -49,14 +49,14 @@ class SubGraph:
         for node_id, node_pb in enumerate(self.graph_pb.node):
             for input_stream_pb in node_pb.input_stream:
                 tag, index, name = parse_tag_index_name(input_stream_pb)
-                stream = Stream(StreamType.INPUT_STREAM, input_stream_pb)
+                stream = Stream(StreamType.INPUT_STREAM, input_stream_pb, max_size=self.graph_pb.max_queue_size)
                 streams.append([StreamType.INPUT_STREAM, tag, index, name, input_stream_pb, stream, node_id, 0])
 
         # node output stream
         for node_id, node_pb in enumerate(self.graph_pb.node):
             for output_stream_pb in node_pb.output_stream:
                 tag, index, name = parse_tag_index_name(output_stream_pb)
-                stream = Stream(StreamType.OUTPUT_STREAM, output_stream_pb)
+                stream = Stream(StreamType.OUTPUT_STREAM, output_stream_pb, max_size=self.graph_pb.max_queue_size)
                 streams.append([StreamType.OUTPUT_STREAM, tag, index, name, output_stream_pb, stream, node_id, 0])
 
         df = pd.DataFrame(columns=self._stream_df_columns, data=streams)
@@ -201,7 +201,7 @@ class CalculatorGraph:
         logger.info(self._node_df)
         logger.info(self._graph_df)
 
-        self.initialize_executors()
+        self.initialize_executors(input_config.num_threads)
         # TODO side package
         # self.initialize_packet_generator_graph(side_packets)
         self.initialize_streams()
@@ -238,7 +238,8 @@ class CalculatorGraph:
         stream = self.output_streams.get(tag, index)
         return stream.popleft(blocking)
 
-    def initialize_executors(self): ...
+    def initialize_executors(self, num_threads):
+        self._scheduler.init_executor(num_threads)
 
     def initialize_packet_generator_graph(self, side_packets): ...
 

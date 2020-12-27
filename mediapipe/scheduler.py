@@ -59,10 +59,10 @@ class Scheduler:
 
     def __init__(self, graph):
         self._graph = graph # The calculator graph to run.
-        # TODO set length
+        # TODO set length, and set priority
         self._default_queue = Queue()     # Queue of nodes that need to be run.
         # TODO set thread count
-        self._default_executor = ThreadPoolExecutor(thread_name_prefix='mediapipe')
+        self._default_executor = None
         self._scheduler_queues = []    # Holds pointers to all queues used by the scheduler, for convenience.
         self._non_default_queues = []  # Non-default scheduler queues, keyed by their executor names.
         self._state=Scheduler.State.STATE_NOT_STARTED
@@ -94,10 +94,15 @@ class Scheduler:
         # Number of throttled graph input streams.
         self._throttled_graph_input_stream_count = 0
 
+    def init_executor(self, num_threads):
+        num_threads = None if num_threads <= 0 else num_threads
+        self._default_executor = ThreadPoolExecutor(thread_name_prefix='simple-mediapipe', max_workers=num_threads)
+
     def set_executor(self, executor):
         """Sets the executor that will run the nodes. Must be called before the
            scheduler is started. This is the normal executor used for nodes that
            do not use a special one."""
+
     def set_non_default_executor(self, name, executor):
         """ Sets the executor that will run the nodes assigned to the executor
             named |name|. Must be called before the scheduler is started."""

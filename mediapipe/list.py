@@ -6,7 +6,7 @@ class List:
     # TODO block
     def __init__(self, max_size=100):
         self.cond = threading.Condition()
-        self.max_size = max_size
+        self.max_size = 100 if max_size <= 0 else max_size
         self.arr = []
 
     def __len__(self):
@@ -34,12 +34,12 @@ class List:
     def push_last(self, item):
         with self.cond:
             ret = None
-            if len(self) == 0:
-                self.cond.notify()
             if len(self) + 1 >= self.max_size:
                 ret = self.arr.pop()
                 logger.warn('current list size out of max size, remove {}'.format(ret))
             self.arr.append(item)
+            if len(self) == 1:
+                self.cond.notify()
             return ret
 
     def clear(self):

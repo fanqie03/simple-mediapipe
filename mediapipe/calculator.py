@@ -61,26 +61,31 @@ class CalculatorNode:
         1. check input stream timestamp is ready
         2. get correct packet from input_stream to default_context
         3. if default_context is ready, add self.run to schedule queue"""
+        flag = False
+        packet_timestamp = -1
         if self._default_run_condition == 'one or more':
-            flag = False
             for index, stream in enumerate(self.input_streams):
                 # deprecated some expire package
                 while len(stream) and stream.get().timestamp < self.timestamp:
                     expire_package = stream.popleft()
-                    logger.warn('calculator [{}] deprecated some expire package [{}]'
+                    logger.warn('[{}] deprecated some expire package [{}]'
                                 .format(self, expire_package))
                 if len(stream) and stream.get().timestamp >= self.timestamp:
                     packet = stream.popleft()
                     stream_mirror = self._default_context.inputs()[index]
                     stream_mirror.add_packet(packet)
                     flag = True
-            return flag
+                    packet_timestamp = packet.timestamp
+        # TODO prepare update accept timestamp
+        if flag:
+            self.timestamp = packet_timestamp
+        return flag
 
     def run(self):
         with self._default_context_mutex:
             try:
                 logger.debug('{} execute!'.format(self))
-                if not self.prepare_packet():  # default_context没有准备好
+                if not self.is_source() and not self.prepare_packet():  # default_context没有准备好
                     logger.debug('{} did not prepare'.format(self))
                     return
                 self.calculator_base.process(self._default_context)
@@ -91,12 +96,15 @@ class CalculatorNode:
             except Exception as e:
                 self.exception_count += 1
                 logger.exception(e)
-                logger.info('exception count is {}, max exception count is {}'
-                            .format(self.exception_count, self.max_exception_count))
+                logger.info('{} exception count is {}, max exception count is {}'
+                            .format(self, self.exception_count, self.max_exception_count))
                 if self.exception_count >= self.max_exception_count:
                     logger.error("Excetion count >= Max exception count")
                     self._graph._scheduler.set_queues_running(False)
                     # TODO exit?
+            finally:
+                if self.is_source() and self.exception_count < self.max_exception_count:
+                    self._graph.add_task(self.run)
 
     def __str__(self):
         return 'Node {}'.format(self.calculator_base)
