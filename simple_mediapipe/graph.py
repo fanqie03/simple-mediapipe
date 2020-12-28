@@ -80,6 +80,7 @@ class SubGraph:
                 stream.add_downstream(down_row['item'])
 
         # init node
+        return_nodes = []
         nodes = []
         for node_id, node_pb in enumerate(self.graph_pb.node):
             # check node exists
@@ -91,11 +92,13 @@ class SubGraph:
             elif CALCULATOR.get(node_type) is not None:
                 node = CalculatorNode(self.main_graph, node_pb)
                 node.init_context()
+                return_nodes.append(node)
             elif node_type in self._graph_df.type:
                 # recursive
                 sub_graph_pb = self._graph_df[self._graph_df['type'] == node_type]['config'][0]
                 node = SubGraph(self.main_graph, sub_graph_pb, self._graph_df)
-                node.parse_config()
+                sub_nodes = node.parse_config()
+                return_nodes.extend(sub_nodes)
             nodes.append([node_pb.calculator, node, node_id, 0])
         df = pd.DataFrame(columns=self._node_df_columns, data=nodes)
         self._node_df = pd.concat([self._node_df, df], axis=0)
@@ -151,6 +154,7 @@ class SubGraph:
             if isinstance(item, CalculatorNode):
                 item.init_context()
                 item.calculator_base.get_contract(item._default_context)
+        return return_nodes
 
 
 class CalculatorGraph:
@@ -217,7 +221,7 @@ class CalculatorGraph:
 
         sub_graph = SubGraph(self, configs[0], self._graph_df)
         # main_graph = SubGraph(1,2)
-        sub_graph.parse_config()
+        self._nodes = sub_graph.parse_config()
         self.input_streams = sub_graph.graph_input_streams
         self.output_streams = sub_graph.graph_output_streams
 
@@ -241,7 +245,11 @@ class CalculatorGraph:
 
     def initialize_streams(self):...
 
-    def initialize_calculator_nodes(self):...
+    def initialize_calculator_nodes(self):
+        # 检查source node
+        for node in self._nodes:
+            if node.is_source():
+                self.add_task(node.run)
 
     def initialize_profiler(self): ...
 

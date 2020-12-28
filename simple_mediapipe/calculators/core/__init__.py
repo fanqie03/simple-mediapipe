@@ -32,10 +32,34 @@ class MergeCalculator(CalculatorBase):
     def process(self, cc): ...
 
 
+
+import time
+from simple_mediapipe.packet import Packet
+
 @CALCULATOR.register_module()
-class SourceCalculator(CalculatorBase):
+class ProducerCalculator(CalculatorBase):
+    seperate = 1
+    id = 0
+    def open(self, cc):...
+        # self.seperate = 1
+        # self.id = 0
+
+    def process(self, cc):
+        time.sleep(self.seperate)
+        packet = Packet(data={'id':self.id}, timestamp=self.id)
+        logger.info('after %s seconds produce %s', self.seperate, packet)
+        for stream in cc.outputs():
+            stream.add_packet(packet)
+        self.id += 1
+
+
+@CALCULATOR.register_module()
+class ConsumerCalculator(CalculatorBase):
     def open(self, cc):
         ...
 
     def process(self, cc):
-        ...
+        for stream in cc.inputs():
+            item = stream.get()
+            logger.info('consume %s', item)
+

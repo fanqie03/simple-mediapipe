@@ -143,8 +143,7 @@ class Scheduler:
 
         def run_queue():
             while self.running:
-                logger.debug('try execute task, the task queue length is %s, '
-                             'thread pool worker queue length is %s'
+                logger.debug('try execute task, the task queue length is %s, thread pool worker queue length is %s'
                              , self._default_queue.qsize(), self._default_executor._work_queue.qsize())
                 task = self._default_queue.get(block=True)
                 self._default_executor.submit(task)
@@ -161,11 +160,12 @@ class Scheduler:
                 #         self.set_queues_running(False)
                 #         # TODO exit?
 
-        if not blocking:
+        if blocking:
+            run_queue()
+        else:
             single_thread_pool = ThreadPoolExecutor()
             single_thread_pool.submit(run_queue)
-        else:
-            run_queue()
+
 
         self.handle_idle()
 
