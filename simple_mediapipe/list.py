@@ -36,7 +36,7 @@ class List:
             ret = None
             if len(self) + 1 >= self.max_size:
                 ret = self.arr.pop()
-                logger.warn('current list size out of max size, remove {}'.format(ret))
+                logger.warn('current list size out of max size, remove %s', ret)
             self.arr.append(item)
             if len(self) == 1:
                 self.cond.notify()

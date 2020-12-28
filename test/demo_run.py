@@ -27,11 +27,11 @@ def main():
     graph.add_packet(tag='', index=0, packet=Packet('data2', 1))
     graph.add_packet(tag='', index=0, packet=Packet('data3', 2))
     # graph.add_packet('', 0, Packet('data', 0))
-    logger.info('output is {}'.format(graph.pop_packet(tag='', index=0)))
-    logger.info('output is {}'.format(graph.pop_packet(tag='', index=0, blocking=2)))
+    logger.info('output is %s', graph.pop_packet(tag='', index=0))
+    logger.info('output is %s', graph.pop_packet(tag='', index=0, blocking=2))
     time.sleep(5)
     for i in range(10):
-        logger.info('output is {}'.format(graph.pop_packet(tag='', index=0)))
+        logger.info('output is %s', graph.pop_packet(tag='', index=0))
 
 
 if __name__ == '__main__':

@@ -1,6 +1,6 @@
 from queue import LifoQueue,Queue
 from collections import deque
-from mediapipe.packet import Packet
+from simple_mediapipe.packet import Packet
 
 lst = [Packet(timestamp=1), Packet(timestamp=0), Packet(timestamp=-1), Packet(timestamp=0)]
 print(lst)

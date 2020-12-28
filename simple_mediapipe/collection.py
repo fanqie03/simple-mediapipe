@@ -1,5 +1,4 @@
 from logzero import logger
-from collections import Iterable
 
 
 def parse_tag_index_name(tag_index_name: str):
@@ -51,7 +50,7 @@ class Collection:
                 item_list.append(item)
             else:
                 if item_list[index] is not None:
-                    logger.warning('{}:{} conflict, will be override by {}'.format(tag, index, tag_index_name))
+                    logger.warning('%s:%s conflict, will be override by %s', tag, index, tag_index_name)
                 item_list[index] = item
             self._all_item_list.append(item)
 
@@ -72,3 +71,6 @@ class Collection:
 
     def __len__(self):
         return len(self._all_item_list)
+
+    def __str__(self):
+        return '[' + ', '.join(map(lambda x: str(x), self._all_item_list)) + ']'

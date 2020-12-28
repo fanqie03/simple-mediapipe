@@ -1,9 +1,6 @@
 from .counter import BasicCounterFactory
 from .scheduler import Scheduler
-from logzero import logger
-from .graph_validation import validate_graph
 from .calculator import CalculatorNode
-from .collection import parse_tag_index_name
 # TODO remove pandas
 import pandas as pd
 from .stream import *
@@ -89,8 +86,7 @@ class SubGraph:
             node_type = node_pb.calculator
             node = None
             if CALCULATOR.get(node_type) is None and node_type not in self._graph_df.type:
-                logger.error('Calculator {} not exists. Please registry it or add sub graph dependence.'
-                             .format(node_type))
+                logger.error('Calculator %s not exists. Please registry it or add sub graph dependence.', node_type)
                 sys.exit(1)
             elif CALCULATOR.get(node_type) is not None:
                 node = CalculatorNode(self.main_graph, node_pb)

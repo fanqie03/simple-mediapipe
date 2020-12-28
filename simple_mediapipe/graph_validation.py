@@ -14,10 +14,10 @@ def validate_graph(graph_config):
         status = calculator.get_contract(None)
 
         if not status:
-            logger.error('{} Index[{}] node config is not correct. Please check calculator config detail'.format(name, i))
+            logger.error('%s Index[%s] node config is not correct. Please check calculator config detail', name, i)
             return False
         else:
-            logger.debug('{} Index[{}] node check success'.format(name, i))
+            logger.debug('%s Index[%s] node check success', name, i)
     return True
 
 

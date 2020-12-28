@@ -22,5 +22,5 @@ class ProduceThread(threading.Thread):
 produce = ProduceThread(arr)
 produce.start()
 logger.info('get element')
-logger.info('get element {}'.format(arr.get_first(blocking=10)))
+logger.info('get element %s', arr.get_first(blocking=10))
 logger.info('get element complete')

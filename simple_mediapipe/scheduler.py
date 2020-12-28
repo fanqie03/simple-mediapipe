@@ -143,9 +143,9 @@ class Scheduler:
 
         def run_queue():
             while self.running:
-                logger.debug('try execute task, the task queue length is {}, '
-                             'thread pool worker queue length is {}'
-                             .format(self._default_queue.qsize(), self._default_executor._work_queue.qsize()))
+                logger.debug('try execute task, the task queue length is %s, '
+                             'thread pool worker queue length is %s'
+                             , self._default_queue.qsize(), self._default_executor._work_queue.qsize())
                 task = self._default_queue.get(block=True)
                 self._default_executor.submit(task)
                 # TODO, WILL THROW EXCEPTION WHEN SUBMIT TASK
