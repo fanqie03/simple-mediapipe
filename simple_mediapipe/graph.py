@@ -160,7 +160,6 @@ class SubGraph:
 
 class CalculatorGraph:
     def __init__(self):
-        # TODO
         self._scheduler = Scheduler(self)
         # TODO
         self._profiler = None

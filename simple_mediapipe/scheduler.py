@@ -1,6 +1,6 @@
 from enum import Enum
 from logzero import logger
-from queue import Queue, PriorityQueue
+from queue import PriorityQueue
 from concurrent.futures import ThreadPoolExecutor
 
 

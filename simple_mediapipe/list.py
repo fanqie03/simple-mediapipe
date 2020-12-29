@@ -3,7 +3,6 @@ from logzero import logger
 
 
 class List:
-    # TODO block
     def __init__(self, max_size=100):
         self.cond = threading.Condition()
         self.max_size = 100 if max_size <= 0 else max_size

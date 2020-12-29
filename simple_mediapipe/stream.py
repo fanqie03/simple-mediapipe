@@ -1,6 +1,3 @@
-from enum import Enum
-import queue
-from collections import deque
 from .list import List
 from types import MethodType, FunctionType
 from logzero import logger
@@ -15,12 +12,6 @@ class StreamType:
     OUTPUT_SIDE_PACKET = "OUTPUT_SIDE_PACKET"
     GRAPH_INPUT_STREAM = "GRAPH_INPUT_STREAM"
     GRAPH_OUTPUT_STREAM = "GRAPH_OUTPUT_STREAM"
-
-
-class NodeReadiness(Enum):
-    kNotReady = 0
-    kReadyForProcess = 1
-    kReadyForClose = 2
 
 
 class Stream:
