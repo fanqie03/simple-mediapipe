@@ -38,11 +38,9 @@ from simple_mediapipe.packet import Packet
 
 @CALCULATOR.register_module()
 class ProducerCalculator(CalculatorBase):
-    seperate = 1
-    id = 0
-    def open(self, cc):...
-        # self.seperate = 1
-        # self.id = 0
+    def open(self, cc):
+        self.seperate = 1
+        self.id = 0
 
     def process(self, cc):
         time.sleep(self.seperate)

@@ -5,25 +5,6 @@ from threading import Lock
 from .collection import Collection
 
 
-class CalculatorBase:
-    @staticmethod
-    def get_contract(cc):
-        """检查graph的配置是否符合要求"""
-        return True
-
-    def open(self, cc):
-        """初始化改Calculator"""
-
-    def process(self, cc):
-        """处理"""
-
-    def close(self, cc):
-        """释放资源"""
-
-    def __str__(self):
-        return self.__class__.__name__
-
-
 class CalculatorNode:
 
     _static_id = 0
@@ -31,6 +12,7 @@ class CalculatorNode:
     def __init__(self, graph, config):
         calculator_module = CALCULATOR.get(config.calculator)
         self.calculator_base = calculator_module()
+        self._options = config.options
 
         # TODO 1. only one 2. total 3. point which stream
         self._default_run_condition = 'one or more'
@@ -151,11 +133,15 @@ class CalculatorContext:
     // inside of through a number of accessor functions: Inputs(), Outputs(),
     // InputSidePackets(), Options(), etc.
     """
-    def __init__(self, node:CalculatorNode):
+    def __init__(self, node: CalculatorNode):
         # mirror of calculator inputs
         self.input_stream_shards = copy.deepcopy(node.input_streams)
         # mirror of calculator outputs
         self.output_stream_shards = copy.deepcopy(node.output_streams)
+        self._options = node._options
+
+    def options(self):
+        return self._options
 
     def clear(self):
         for stream in self.input_stream_shards:
@@ -166,4 +152,26 @@ class CalculatorContext:
 
     def outputs(self) -> Collection:
         return self.output_stream_shards
+
+
+class CalculatorBase:
+    def __init__(self):
+        self._options = None
+
+    @staticmethod
+    def get_contract(cc: CalculatorContext):
+        """检查graph的配置是否符合要求"""
+        return True
+
+    def open(self, cc: CalculatorContext):
+        """初始化改Calculator"""
+
+    def process(self, cc: CalculatorContext):
+        """处理"""
+
+    def close(self, cc: CalculatorContext):
+        """释放资源"""
+
+    def __str__(self):
+        return self.__class__.__name__
 

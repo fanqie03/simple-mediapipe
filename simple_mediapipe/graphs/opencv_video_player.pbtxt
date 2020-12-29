@@ -1,0 +1,9 @@
+node {
+  calculator: "OpenCvVideoEncoderCalculator"
+  output_stream: "IMAGE:data"
+}
+
+node {
+  calculator: "OpenCvShowImageCalculator"
+  input_stream: "IMAGE:data"
+}

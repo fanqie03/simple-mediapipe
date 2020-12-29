@@ -1,5 +1,9 @@
+import time
+
+
 class Packet:
-    def __init__(self, data=None, timestamp=0):
+    def __init__(self, data=None, timestamp=time.time()*1000):
+        # timestamp default unit is milli seconds
         self.data = data
         self.timestamp = timestamp
 

@@ -2,7 +2,8 @@ from .list import List
 from types import MethodType, FunctionType
 from logzero import logger
 import sys
-from .collection import parse_tag_index_name
+from .tool import parse_tag_index_name
+from .packet import Packet
 
 
 class StreamType:
@@ -27,11 +28,11 @@ class Stream:
     def __str__(self):
         return '{}:"{}", current queue size is {}'.format(self.stream_type, self.tag_index_name, len(self))
 
-    def add_packet(self, packet):
+    def add_packet(self, packet: Packet):
         self._queue.push_last(packet)
 
     def add_downstream(self, downstream):
-        logger.debug('stream <%s> add downstream <%s>', self, downstream)
+        logger.info('stream <%s> add downstream <%s>', self, downstream)
         if isinstance(downstream, (MethodType, FunctionType)) and self.downstream is None:
             self.downstream = downstream
         elif not isinstance(downstream, (list, tuple)):
@@ -58,14 +59,14 @@ class Stream:
                 # recursive
                 downstream.propagate_downstream()
 
-    def get(self, blocking=None):
+    def get(self, blocking=None) -> Packet:
         """get and return item"""
         return self._queue.get_first(blocking)
 
     def __len__(self):
         return len(self._queue)
 
-    def popleft(self, blocking=None):
+    def popleft(self, blocking=None) -> Packet:
         """get and pop left item in queue"""
         return self._queue.pop_first(blocking)
 

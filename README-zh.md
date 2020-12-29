@@ -119,6 +119,11 @@ python test/demo_run.py simple_mediapipe/graphs/sample1.pbtxt
 
 - [mediapipe](mediapipe)文件夹放的官方实现的配置，可以使用[convert_proto.cmd](convert_proto.cmd)来更新配置
 - [simple_mediapipe](simple_mediapipe)放的是本仓库的代码
+- [convert_proto.cmd](convert_proto.cmd)更新mediapipe配置，将pbtxt转成py文件，使用方式：设置mediapipe仓库目录
+    ```cmd
+    set MEDIAPIPE_OFFICIAL_HOME=...
+    convert_proto.cmd %MEDIAPIPE_OFFICIAL_HOME%
+    ```
 
 ## TODO
 

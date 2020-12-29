@@ -1,28 +1,6 @@
 from logzero import logger
-
-
-def parse_tag_index_name(tag_index_name: str):
-    """
-    // Examples:
-    //   "VIDEO:frames2"  -> tag: "VIDEO", index: 0,  name: "frames2"
-    //   "VIDEO:1:frames" -> tag: "VIDEO", index: 1,  name: "frames"
-    //   "raw_frames"     -> tag: "",      index: -1, name: "raw_frames"
-    :param tag_index_name:
-    :return: tag, index, name
-    """
-    tag, index, name = "", 0, ""
-    parts = tag_index_name.split(':')
-    if len(parts) == 1 and parts[0].islower():
-        name = parts[0]
-        index = -1
-    elif len(parts) == 2 and parts[0].isupper() and parts[1].islower():
-        tag = parts[0]
-        name = parts[1]
-    elif len(parts) == 3 and parts[0].isupper() and parts[1].isnumeric() and parts[2].islower():
-        tag, index, name = parts
-    else:
-        raise Exception('{} can not be parsed', tag_index_name)
-    return tag, index, name
+from .tool import parse_tag_index_name
+from .stream import Stream
 
 
 class Collection:
@@ -57,16 +35,16 @@ class Collection:
     def has_tag(self, tag):
         return self._tag_map.get(tag) is not None
 
-    def tag(self, tag):
+    def tag(self, tag) -> Stream:
         return self.get(tag, 0)
 
-    def get(self, tag, index):
+    def get(self, tag, index) -> Stream:
         t = self._tag_map.get(tag)
         if t is None:
             return None
         return t[index]
 
-    def __getitem__(self, index):
+    def __getitem__(self, index) -> Stream:
         return self._all_item_list[index]
 
     def __len__(self):
