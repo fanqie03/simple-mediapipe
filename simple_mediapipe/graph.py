@@ -1,4 +1,3 @@
-from .counter import BasicCounterFactory
 from .scheduler import Scheduler
 from .calculator import CalculatorNode
 # TODO remove pandas
@@ -86,19 +85,21 @@ class SubGraph:
             # check node exists
             node_type = node_pb.calculator
             node = None
-            if CALCULATOR.get(node_type) is None and node_type not in self._graph_df.type:
+            if CALCULATOR.get(node_type) is None and node_type not in self._graph_df.type.tolist():
                 logger.error('Calculator %s not exists. Please registry it or add sub graph dependence.', node_type)
                 sys.exit(1)
             elif CALCULATOR.get(node_type) is not None:
                 node = CalculatorNode(self.main_graph, node_pb)
                 node.init_context()
                 return_nodes.append(node)
-            elif node_type in self._graph_df.type:
+                logger.debug('init calculator %s complete', node)
+            elif node_type in self._graph_df.type.tolist():
                 # recursive
-                sub_graph_pb = self._graph_df[self._graph_df['type'] == node_type]['config'][0]
+                sub_graph_pb = self._graph_df[self._graph_df['type'] == node_type]['config'].iloc[0]
                 node = SubGraph(self.main_graph, sub_graph_pb, self._graph_df)
                 sub_nodes = node.parse_config()
                 return_nodes.extend(sub_nodes)
+                logger.debug('init sub graph  %s complete', node_type)
             nodes.append([node_pb.calculator, node, node_id, 0])
         df = pd.DataFrame(columns=self._node_df_columns, data=nodes)
         self._node_df = pd.concat([self._node_df, df], axis=0)
@@ -136,7 +137,7 @@ class SubGraph:
                     for parent_index, parent_row in input_streams[
                         (input_streams['tag'] == stream.tag) &
                         (input_streams['index'] == stream.index)
-                    ]:
+                    ].iterrows():
                         parent_row['item'].add_downstream(stream)
                 # sub graph GraphOutputStream
                 for stream_index, stream in enumerate(item.graph_output_streams):
@@ -144,10 +145,10 @@ class SubGraph:
                     # parent graph OutputStream
                     # generally only one result (one SubGraph GraphInputStream connect one parent OutputStream)
                     for parent_index, parent_row in output_streams[
-                        (input_streams['tag'] == stream.tag) &
-                        (input_streams['index'] == stream.index)
-                    ]:
-                        parent_row['item'].add_downstream(stream)
+                        (output_streams['tag'] == stream.tag) &
+                        (output_streams['index'] == stream.index)
+                    ].iterrows():
+                        stream.add_downstream(parent_row['item'])
 
         for node_row in nodes:
             item = node_row[1]
@@ -159,27 +160,20 @@ class SubGraph:
 
 class CalculatorGraph:
     def __init__(self):
-        self._counter_factory = BasicCounterFactory()
         # TODO
         self._scheduler = Scheduler(self)
         # TODO
         self._profiler = None
         self._initialized = False
-        self._validated_graph = None
         self._nodes = []
         self.input_streams = Collection()
         self.output_streams = Collection()
 
-        self._stream_df_columns = ['type', 'tag', 'index', 'name', 'tag_index_name', 'item', 'node_id', 'graph_id']
-        self._node_df_columns = ['type', 'item', 'node_id', 'graph_id']
         self._graph_df_columns = ['type', 'item', 'graph_id', 'config']
-
-        self._stream_df = pd.DataFrame(columns=self._stream_df_columns)
-        self._node_df = pd.DataFrame(columns=self._node_df_columns)
         self._graph_df = pd.DataFrame(columns=self._graph_df_columns)
 
-    def add_task(self, task_fn):
-        self._scheduler.add_task(task_fn)
+    def add_task(self, task_node):
+        self._scheduler.add_task(task_node)
 
     def initialize(self, input_config, deps_config=[], side_packets={}):
         """
@@ -191,15 +185,9 @@ class CalculatorGraph:
             logger.warming("CalculatorGraph can be initialized only once.")
             return
 
-        # TODO check input_config is valid
-        # validate_graph(input_config)
-        self._validated_graph = input_config
-
         # TODO 待完善，会出现GraphInputStream连着GraphInputStream，GraphOutputStram连着GraphOutputGream
         self.parse_config([input_config] + deps_config)
-        logger.info(self._stream_df)
-        logger.info(self._node_df)
-        logger.info(self._graph_df)
+        logger.debug(self._graph_df)
 
         self.initialize_executors(input_config.num_threads)
         # TODO side package
@@ -249,7 +237,7 @@ class CalculatorGraph:
         # 检查source node
         for node in self._nodes:
             if node.is_source():
-                self.add_task(node.run)
+                self.add_task(node)
 
     def initialize_profiler(self): ...
 

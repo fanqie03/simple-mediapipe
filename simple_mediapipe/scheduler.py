@@ -1,31 +1,7 @@
 from enum import Enum
 from logzero import logger
-from queue import Queue
+from queue import Queue, PriorityQueue
 from concurrent.futures import ThreadPoolExecutor
-
-
-class TaskQueue:
-    """
-    Abstract base class for the task queue.
-    NOTE: The task queue orders the ready tasks by their priorities. This
-    enables the executor to run ready tasks in priority order.
-    """
-
-    def run_next_task(self):
-        """
-        Runs the next ready task in the current thread. Should be invoked by the
-        executor. This method should be called exactly as many times as AddTask
-        was called on the executor.
-        :return:
-        """
-
-
-class Executor:
-    def __init__(self): ...
-
-    def add_task(self, task_queue): ...
-
-    def scheduler(self, task): ...
 
 
 class Scheduler:
@@ -60,7 +36,7 @@ class Scheduler:
     def __init__(self, graph):
         self._graph = graph # The calculator graph to run.
         # TODO set length, and set priority
-        self._default_queue = Queue()     # Queue of nodes that need to be run.
+        self._default_queue = PriorityQueue()     # Queue of nodes that need to be run.
         # TODO set thread count
         self._default_executor = None
         self._scheduler_queues = []    # Holds pointers to all queues used by the scheduler, for convenience.
@@ -145,8 +121,11 @@ class Scheduler:
             while self.running:
                 logger.debug('try execute task, the task queue length is %s, thread pool worker queue length is %s'
                              , self._default_queue.qsize(), self._default_executor._work_queue.qsize())
-                task = self._default_queue.get(block=True)
-                self._default_executor.submit(task)
+                task_node = self._default_queue.get(block=True)
+                if not task_node.is_opened:
+                    self._default_executor.submit(task_node.open_node())
+                else:
+                    self._default_executor.submit(task_node.run())
                 # TODO, WILL THROW EXCEPTION WHEN SUBMIT TASK
                 # try:
                 #     self._default_executor.submit(task)
@@ -166,11 +145,10 @@ class Scheduler:
             single_thread_pool = ThreadPoolExecutor()
             single_thread_pool.submit(run_queue)
 
-
         self.handle_idle()
 
-    def add_task(self, task):
-        self._default_queue.put(task)
+    def add_task(self, task_node):
+        self._default_queue.put(task_node)
 
     def pause(self):
         """Pauses the scheduler.  Does nothing if Cancel has been called."""
@@ -190,59 +168,3 @@ class Scheduler:
 
     def close_all_source_nodes(self):
         """Closes all source nodes at the next scheduling opportunity."""
-
-
-class SchedulerQueue(TaskQueue):
-    """Manages a priority queue of nodes to be run on the associated executor."""
-    class Item:
-        """Item in the queue. Wraps a node pointer and helps with priority sorting."""
-        def __init__(self, node, context=None):
-            self.node=node
-            self.context=context
-            self.source_process_order=0
-            self.id = 0
-            self.layer=0
-            self.is_source=False
-            self.is_open_node=False  # True if the task should run OpenNode().
-            self._running_count = 0
-
-        def set_running(self, running):
-            self._running_count += 1 if running else -1
-            assert self._running_count <= 1
-
-        def __cmp__(self, other):
-            """
-            This comparison is meant to be used with a std::priority_queue. Since
-            the priority queue returns higher priority items first, this function
-            means "this is lower priority than that", i.e. "this runs after that".
-            - Non-sources have priority over sources.
-            - Sources are sorted by layer (lower layer numbers run first), then by
-            Calculator::SourceProcessOrder (smaller values run first), then by
-            node id: smaller ids run first, since they come earlier in the config.
-            - Non-sources are sorted by node id: larger ids run first, because they
-            are closer to the leaves.
-            :param other: SchedulerQueue.Item
-            :return:
-            """
-            if self.is_open_node or other.is_open_node:
-                # OpenNode() runs before ProcessNode().
-                if not other.is_open_node: return False
-                # ProcessNode() runs after OpenNode().
-                if not self.is_open_node: return True
-                # If both are OpenNode(), higher ids run after lower ids.
-                return self.id > other.id
-            if self.is_source:
-                # Sources run after non-sources.
-                if not other.is_source: return True
-                # Higher layer sources run after lower layer sources.
-                if self.layer != other._layer: return self.layer > other.layer
-                # Higher SourceProcessOrder values run after lower values.
-                if self.source_process_order != other.source_process_order:
-                    return self.source_process_order > other.source_process_order
-                # For sources, higher ids run after lower ids.
-                return self.id > other.id
-            else:
-                # Non-sources run before sources.
-                if other.is_source: return False
-                # For non-sources, higher ids run before lower ids.
-                return self.id < other.id

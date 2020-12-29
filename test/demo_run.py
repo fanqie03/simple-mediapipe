@@ -11,8 +11,8 @@ import time
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('graph', type=str)
-    parser.add_argument('--dependents', '-deps', nargs='+', type=str, help='sub graph dependents')
+    parser.add_argument('graphs', nargs='+', default=[], type=str,
+                        help="graph location, first is main graph, other is sub graph")
     return parser.parse_args()
 
 
@@ -20,11 +20,14 @@ def main():
     args = get_args()
 
     logzero.loglevel(logging.INFO)
-    graph_config = calculator_pb2.CalculatorGraphConfig()
-    text_format.Merge(open(args.graph).read(), graph_config)
-    logger.info(graph_config)
+    graph_configs = []
+    for graph in args.graphs:
+        graph_config = calculator_pb2.CalculatorGraphConfig()
+        text_format.Merge(open(graph).read(), graph_config)
+        logger.info(graph_config)
+        graph_configs.append(graph_config)
     graph = CalculatorGraph()
-    graph.initialize(graph_config)
+    graph.initialize(graph_configs[0], graph_configs[1:])
     graph.start_run(None, None, True)
     # graph.add_packet(tag='', index=0, packet=Packet('data1', 0))
     # graph.add_packet(tag='', index=0, packet=Packet('data2', 1))

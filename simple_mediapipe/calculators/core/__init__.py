@@ -16,7 +16,7 @@ class PassThroughCalculator(CalculatorBase):
         """输入复制到输出"""
         for input_stream, output_stream in zip(cc.inputs(), cc.outputs()):
             packet = input_stream.get()
-            logger.debug('pass through packet %s', packet)
+            logger.info('pass through packet %s', packet)
             output_stream.add_packet(packet)
 
 

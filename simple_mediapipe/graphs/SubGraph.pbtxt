@@ -1,0 +1,10 @@
+type: "SubGraphPassThroughCalculator"
+
+input_stream: "INPUT:in"
+output_stream: "OUTPUT:out"
+
+node {
+  calculator: "PassThroughCalculator"
+  input_stream: "in"
+  output_stream: "out"
+}

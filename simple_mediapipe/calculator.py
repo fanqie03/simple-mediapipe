@@ -26,6 +26,8 @@ class CalculatorBase:
 
 class CalculatorNode:
 
+    _static_id = 0
+
     def __init__(self, graph, config):
         calculator_module = CALCULATOR.get(config.calculator)
         self.calculator_base = calculator_module()
@@ -41,7 +43,19 @@ class CalculatorNode:
         # self._scheduler = self._graph._scheduler
         self.exception_count = 0
         self.max_exception_count = 100
+        self.id = CalculatorNode._static_id
+        CalculatorNode._static_id += 1
+        self.is_opened = False
         # TODO init calculator contract and check calculator base.
+
+    def open_node(self):
+        self.calculator_base.open(self._default_context)
+        self.is_opened = True
+        self.run()
+
+    def close_node(self):
+        self.calculator_base.close(self._default_context)
+        self.is_opened = False
 
     def init_context(self):
         # when stream init, call this function
@@ -51,7 +65,7 @@ class CalculatorNode:
         self._graph = graph
 
     def input_stream_listener(self):
-        self._graph.add_task(self.run)
+        self._graph.add_task(self)
 
     def prepare_packet(self):
         """input stream callback function
@@ -102,13 +116,33 @@ class CalculatorNode:
                     # TODO exit?
             finally:
                 if self.is_source() and self.exception_count < self.max_exception_count:
-                    self._graph.add_task(self.run)
+                    self._graph.add_task(self)
 
     def __str__(self):
-        return 'Node: {}, inputs: {}, outputs: {}'.format(self.calculator_base, self.input_streams, self.output_streams)
+        return '{}_{}, inputs: {}, outputs: {}'.format(self.calculator_base, self.id, self.input_streams, self.output_streams)
+
+    def __repr__(self):
+        return str(self)
     
     def is_source(self):
         return len(self.input_streams) == 0 and len(self.output_streams) != 0
+
+    def __lt__(self, other):
+        # not opened node 优先级最高
+        # 次之 source node
+        # 接着是id值大的优先级高
+        self_source = self.is_source()
+        other_source = self.is_source()
+        if not self.is_opened or not other.is_opened:
+            if not self.is_opened: return True
+            if not other.is_opened: return False
+            return self.id > other.id
+        if self_source:
+            if not other_source: return True
+            return self.id > other.id
+        else:
+            if other_source: return False
+            return self.id < other.id
 
 
 class CalculatorContext:

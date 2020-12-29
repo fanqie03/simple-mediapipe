@@ -4,6 +4,12 @@ node {
 }
 
 node {
+    calculator: "SubGraphPassThroughCalculator"
+    input_stream: "INPUT:data"
+    output_stream: "OUTPUT:out"
+}
+
+node {
   calculator: "ConsumerCalculator"
-  input_stream: "data"
+  input_stream: "out"
 }

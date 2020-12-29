@@ -40,6 +40,7 @@ class Stream:
         self._queue.push_last(packet)
 
     def add_downstream(self, downstream):
+        logger.debug('stream <%s> add downstream <%s>', self, downstream)
         if isinstance(downstream, (MethodType, FunctionType)) and self.downstream is None:
             self.downstream = downstream
         elif not isinstance(downstream, (list, tuple)):
@@ -55,6 +56,7 @@ class Stream:
 
     def propagate_downstream(self):
         if self.downstream is None:
+            logger.debug('Stream %s, downstream is None', self)
             return
         elif isinstance(self.downstream, (MethodType, FunctionType)):
             self.downstream()
