@@ -60,10 +60,10 @@ class CalculatorNode:
         if self._default_run_condition == 'one or more':
             for index, stream in enumerate(self.input_streams):
                 # deprecated some expire package
-                while len(stream) and stream.get().timestamp < self.timestamp:
+                while len(stream) and stream.get() < self:
                     expire_package = stream.popleft()
                     logger.warn('[%s] deprecated some expire package [%s]', self, expire_package)
-                if len(stream) and stream.get().timestamp >= self.timestamp:
+                if len(stream) and stream.get() >= self:
                     packet = stream.popleft()
                     stream_mirror = self._default_context.inputs()[index]
                     stream_mirror.add_packet(packet)
