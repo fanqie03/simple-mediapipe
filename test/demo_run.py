@@ -17,13 +17,15 @@ def get_args():
                         help="input side packet, name=value,name=value...")
     parser.add_argument('--output_side_packet', type=str, default='',
                         help="output side packet, name=value,name=value...")
+    parser.add_argument('--log_level', choices=['NOTSET', 'DEBUG', 'INFO', 'WARM', 'ERROR', 'FATAL'],
+                        default='INFO', type=str, help="log level")
     return parser.parse_args()
 
 
 def main():
     args = get_args()
 
-    logzero.loglevel(logging.DEBUG)
+    logzero.loglevel(eval('logging.{}'.format(args.log_level)))
     graph_configs = []
     for graph in args.graphs:
         graph_config = calculator_pb2.CalculatorGraphConfig()

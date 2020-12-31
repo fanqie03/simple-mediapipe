@@ -1,6 +1,7 @@
 from simple_mediapipe.calculator import CalculatorBase
 from simple_mediapipe.registration import CALCULATOR
 from logzero import logger
+# import simple_mediapipe.calculators.core.producer_calculator_pb2 as producer_calculator_pb2
 
 
 @CALCULATOR.register_module()
@@ -46,8 +47,9 @@ class ProducerCalculator(CalculatorBase):
         self.id = 0
 
     def process(self, cc):
+        # producer_calculator_pb2.ProducerCalculatorOptions(cc.options())
         time.sleep(self.seperate)
-        packet = Packet(data={'id':self.id}, timestamp=self.id)
+        packet = Packet(data={'id':self.id})
         logger.info('after %s seconds produce %s', self.seperate, packet)
         for stream in cc.outputs():
             stream.add_packet(packet)

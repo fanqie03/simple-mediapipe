@@ -1,0 +1,11 @@
+# producer and consumer
+
+node {
+  calculator: "ProducerCalculator"
+  output_stream: "data"
+}
+
+node {
+  calculator: "ConsumerCalculator"
+  input_stream: "data"
+}

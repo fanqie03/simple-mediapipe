@@ -1,16 +1,14 @@
 # simple mediapipe
 
-mediapipe的简化版本，根据自己的理解，用python重写了遍，大概有1000行左右的代码，以及没有漫长的安装过程。。。
-
-> 蹭下2020的末尾车
+Mediapipe python implement. Convenience to understand. Pure Python. 1000 line.
 
 [English](README-en.md)
 
 [中文](README.md)
 
-## 开始
+## start
 
-克隆，安装
+clone and install
 
 ```shell
 git clone https://github.com/mengfu188/simple_mediapipe
@@ -18,13 +16,13 @@ cd simple_mediapipe
 pip install requirements.txt
 ```
 
-执行例子
+an example
 
 ```shell
 python test/demo_run.py simple_mediapipe/graphs/sample3.pbtxt
 ```
 
-运行结果
+resule log
 
 ```log
 [I 201231 19:38:42 MainThread demo_run:33] node {
@@ -52,27 +50,27 @@ python test/demo_run.py simple_mediapipe/graphs/sample3.pbtxt
 [I 201231 19:38:46 MainThread __init__:67] consume Packet:None_None, Timestamp: 2020-12-31 19:38:46, Data: {'id': 3}
 ```
 
-可以使用一下日志级别显示更多信息
+change log level show more infomation.
 
 ```shell
 python test/demo_run.py simple_mediapipe/graphs/sample3.pbtxt --log_level DEBUG
 ```
 
-## 实现新的Calculator
+## step by step to create new calculator
 
-例如实现一个定时生成数据的生产者`ConsumerCalculator`
+implement a producer that generates data regularly `ConsumerCalculator`.
 
-1. 写`node_options.pbtxt`（不用配置文件可以跳过这一步）
-
-TODO
-
-2. 使用`protobuf`将`node_options.pbtxt`转成`py`文件格式（不用配置文件可以跳过这一步）
+1. write`node_options.pbtxt` (You can skip this step without using a configuration file)
 
 TODO
 
-下载[protocbuf](https://github.com/protocolbuffers/protobuf/releases),
+2. use `protobuf` convert `node_options.pbtxt` to `py` file format (You can skip this step without using a configuration file)
 
-3. 实现[生产者`ProducerCalculator`和消费者`ConsumerCalculator`](simple_mediapipe/calculators/core/__init__.py)
+TODO
+
+download [protocbuf](https://github.com/protocolbuffers/protobuf/releases),
+
+3. implement [producer `ProducerCalculator` and consumer `ConsumerCalculator`](simple_mediapipe/calculators/core/__init__.py)
 
     
 ```python
@@ -107,7 +105,7 @@ class ConsumerCalculator(CalculatorBase):
             logger.info('consume %s', item)
 ```
 
-4. 编写[`graph.pbtxt`](simple_mediapipe/graphs/sample3.pbtxt)
+4. write graph code [`graph.pbtxt`](simple_mediapipe/graphs/sample3.pbtxt)
 
 ```protobuf
 # producer and consumer
@@ -123,9 +121,9 @@ node {
 }
 ```
 
-5. 编写执行文件，读取配置，执行
+5. Write execution file, read configuration, execute
 
-[源码](test/demo_run.py)
+[source code](test/demo_run.py)
 
 ```python
 import mediapipe.framework.calculator_pb2 as calculator_pb2
@@ -165,34 +163,37 @@ def main():
     graph.start_run(args.input_side_packet, None, True)
 ```
 
-执行
+run
 
 ```shell
 python  test/demo_run.py simple_mediapipe/graphs/sample3.pbtxt 
 ```
 
-## 其他
+## other
 
-### 可视化
+### visualization
 
-可以用https://viz.mediapipe.dev/ 可视化pbtxt文件
 
-### 文件介绍
+You can use it https://viz.mediapipe.dev/ visual `pbtxt` file
 
-- [mediapipe](mediapipe)文件夹放的官方实现的配置，可以使用[convert_proto.cmd](convert_proto.cmd)来更新配置
-- [simple_mediapipe](simple_mediapipe)放的是本仓库的代码
-- [convert_proto.cmd](convert_proto.cmd)更新mediapipe配置，将pbtxt转成py文件，使用方式：设置mediapipe仓库目录
+### file introduction
+
+- [mediapipe](mediapipe) put mediapipe official configuration, can be updated by[convert_proto.cmd](convert_proto.cmd).
+- [simple_mediapipe](simple_mediapipe) put this repository code.
+- [convert_proto.cmd](convert_proto.cmd) update mediapipe official configuration, convert pbtxt file to py file
     ```cmd
     convert_proto.cmd /path/to/mediapipe/official/repository
     ```
 
 ## TODO
 
-- [x] 添加side package
-- [ ] 添加demo 
+- [x] side package
+- [ ] demo 
 - [ ] graph profiler
 
-## 参考
+scheduler
+
+## reference
 
 - [mediapipe](https://github.com/google/mediapipe)
 - [mmcv](https://github.com/open-mmlab/mmcv)
