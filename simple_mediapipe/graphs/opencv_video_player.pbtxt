@@ -6,10 +6,16 @@ node {
   calculator: "OpenCvVideoEncoderCalculator"
   input_side_packet: "URL:url"
   output_side_packet: "VIDEO_INFO:video_info"
-  output_stream: "IMAGE:data"
+  output_stream: "VIDEO:img_raw"
+}
+
+node {
+  calculator: "OpenCvDrawFpsCalculator"
+  input_stream: "VIDEO:img_raw"
+  output_stream: "VIDEO:img_fps"
 }
 
 node {
   calculator: "OpenCvShowImageCalculator"
-  input_stream: "IMAGE:data"
+  input_stream: "VIDEO:img_fps"
 }
