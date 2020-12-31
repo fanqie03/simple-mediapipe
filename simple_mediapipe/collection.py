@@ -1,6 +1,8 @@
 from logzero import logger
 from .tool import parse_tag_index_name
 from .stream import Stream
+from .packet import Packet
+from typing import Union
 
 
 class Collection:
@@ -9,6 +11,7 @@ class Collection:
         self._all_item_list = []
 
     def add(self, tag_index_names, items):
+        logger.info('collection add %s, %s', items, tag_index_names )
         if not isinstance(tag_index_names, (list, tuple, set)):
             tag_index_names = [tag_index_names]
             items = [items]
@@ -35,16 +38,16 @@ class Collection:
     def has_tag(self, tag):
         return self._tag_map.get(tag) is not None
 
-    def tag(self, tag) -> Stream:
+    def tag(self, tag) -> Union[Stream, None, Packet]:
         return self.get(tag, 0)
 
-    def get(self, tag, index) -> Stream:
+    def get(self, tag, index) -> Union[Stream, None, Packet]:
         t = self._tag_map.get(tag)
         if t is None:
             return None
         return t[index]
 
-    def __getitem__(self, index) -> Stream:
+    def __getitem__(self, index) -> Union[Stream, Packet]:
         return self._all_item_list[index]
 
     def __len__(self):

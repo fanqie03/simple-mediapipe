@@ -13,13 +13,17 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('graphs', nargs='+', default=[], type=str,
                         help="graph location, first is main graph, other is sub graph")
+    parser.add_argument('--input_side_packet', type=str, default='',
+                        help="input side packet, name=value,name=value...")
+    parser.add_argument('--output_side_packet', type=str, default='',
+                        help="output side packet, name=value,name=value...")
     return parser.parse_args()
 
 
 def main():
     args = get_args()
 
-    logzero.loglevel(logging.INFO)
+    logzero.loglevel(logging.DEBUG)
     graph_configs = []
     for graph in args.graphs:
         graph_config = calculator_pb2.CalculatorGraphConfig()
@@ -28,7 +32,7 @@ def main():
         graph_configs.append(graph_config)
     graph = CalculatorGraph()
     graph.initialize(graph_configs[0], graph_configs[1:])
-    graph.start_run(None, None, True)
+    graph.start_run(args.input_side_packet, None, True)
     # graph.add_packet(tag='', index=0, packet=Packet('data1', 0))
     # graph.add_packet(tag='', index=0, packet=Packet('data2', 1))
     # graph.add_packet(tag='', index=0, packet=Packet('data3', 2))

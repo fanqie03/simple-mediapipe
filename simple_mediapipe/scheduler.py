@@ -141,14 +141,19 @@ class Scheduler:
 
         if blocking:
             run_queue()
+            # TODO check
+            self.handle_idle()
+            self._state = Scheduler.State.STATE_TERMINATED
         else:
-            single_thread_pool = ThreadPoolExecutor()
+            single_thread_pool = ThreadPoolExecutor(max_workers=1)
             single_thread_pool.submit(run_queue)
-
-        self.handle_idle()
 
     def add_task(self, task_node):
         self._default_queue.put(task_node)
+
+    def wait_until_down(self):
+        # TODO wait self._state == Scheduler.State.STATE_TERMINATED
+        return True
 
     def pause(self):
         """Pauses the scheduler.  Does nothing if Cancel has been called."""

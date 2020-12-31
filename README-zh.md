@@ -127,7 +127,7 @@ python test/demo_run.py simple_mediapipe/graphs/sample1.pbtxt
 
 ## TODO
 
-- [ ] 添加side package
+- [x] 添加side package
 - [ ] 添加demo 
 
 ## 参考

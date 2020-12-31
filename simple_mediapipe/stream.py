@@ -4,15 +4,18 @@ from logzero import logger
 import sys
 from .tool import parse_tag_index_name
 from .packet import Packet
+from typing import Union
 
 
 class StreamType:
     INPUT_STREAM = "INPUT_STREAM"
     OUTPUT_STREAM = "OUTPUT_STREAM"
-    INPUT_SIDE_PACKET = "INPUT_SIDE_PACKET"
-    OUTPUT_SIDE_PACKET = "OUTPUT_SIDE_PACKET"
     GRAPH_INPUT_STREAM = "GRAPH_INPUT_STREAM"
     GRAPH_OUTPUT_STREAM = "GRAPH_OUTPUT_STREAM"
+    INPUT_SIDE_PACKET = "INPUT_SIDE_PACKET"
+    OUTPUT_SIDE_PACKET = "OUTPUT_SIDE_PACKET"
+    GRAPH_INPUT_SIDE_PACKET = "GRAPH_INPUT_SIDE_PACKET"
+    GRAPH_OUTPUT_SIDE_PACKET = "GRAPH_OUTPUT_SIDE_PACKET"
 
 
 class Stream:
@@ -59,14 +62,14 @@ class Stream:
                 # recursive
                 downstream.propagate_downstream()
 
-    def get(self, blocking=None) -> Packet:
+    def get(self, blocking=None) -> Union[Packet, None]:
         """get and return item"""
         return self._queue.get_first(blocking)
 
     def __len__(self):
         return len(self._queue)
 
-    def popleft(self, blocking=None) -> Packet:
+    def popleft(self, blocking=None) -> Union[Packet, None]:
         """get and pop left item in queue"""
         return self._queue.pop_first(blocking)
 

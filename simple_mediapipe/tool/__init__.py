@@ -1,3 +1,6 @@
+from typing import Dict
+
+
 def parse_tag_index_name(tag_index_name: str):
     """
     // Examples:
@@ -20,3 +23,22 @@ def parse_tag_index_name(tag_index_name: str):
     else:
         raise Exception('{} can not be parsed', tag_index_name)
     return tag, index, name
+
+
+def parse_side_packets(kvstr) -> Dict:
+    if kvstr in ['', None]:
+        return {}
+    elif isinstance(kvstr, str):
+        ret = {}
+        for item in kvstr.split(','):
+            kv = item.split('=')
+            ret[kv[0]] = kv[1]
+        return ret
+    elif isinstance(kvstr, dict):
+        return kvstr
+
+
+class Stats:
+    Failed = 0
+    Ok = 1
+    Stop = 2

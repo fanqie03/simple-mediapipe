@@ -1,5 +1,11 @@
+input_side_packet: "DEMO_IN:demo_in"
+output_side_packet: "DEMO_OUT:demo_out"
+
+
 node {
   calculator: "OpenCvVideoEncoderCalculator"
+  input_side_packet: "URL:url"
+  output_side_packet: "VIDEO_INFO:video_info"
   output_stream: "IMAGE:data"
 }
 

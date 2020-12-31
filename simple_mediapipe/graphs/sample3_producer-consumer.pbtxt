@@ -1,3 +1,5 @@
+# producer and consumer
+
 node {
   calculator: "ProducerCalculator"
   output_stream: "data"
@@ -7,6 +9,8 @@ node {
     calculator: "SubGraphPassThroughCalculator"
     input_stream: "INPUT:data"
     output_stream: "OUTPUT:out"
+    input_side_packet: "INPUT_PACKET:input_data"
+    output_side_packet: "OUTPUT_PACKET:output_data"
 }
 
 node {

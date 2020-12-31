@@ -19,6 +19,8 @@ class CalculatorNode:
         self.timestamp = -1
         self.input_streams = Collection()
         self.output_streams = Collection()
+        self.input_side_packets = Collection()
+        self.output_side_packets = Collection()
         self._default_context = None
         self._default_context_mutex = Lock()
         self._graph = graph
@@ -139,6 +141,8 @@ class CalculatorContext:
         # mirror of calculator outputs
         self.output_stream_shards = copy.deepcopy(node.output_streams)
         self._options = node._options
+        self._input_side_packets = node.input_side_packets
+        self._output_side_packets = node.output_side_packets
 
     def options(self):
         return self._options
@@ -152,6 +156,10 @@ class CalculatorContext:
 
     def outputs(self) -> Collection:
         return self.output_stream_shards
+
+    def input_side_packets(self) -> Collection: return self._input_side_packets
+
+    def output_side_packets(self) -> Collection: return self._output_side_packets
 
 
 class CalculatorBase:
