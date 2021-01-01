@@ -8,7 +8,6 @@ import threading
 import time
 
 cv2 = None
-import cv2
 
 
 def dynamic_import():
@@ -18,10 +17,27 @@ def dynamic_import():
 
 @CALCULATOR.register_module()
 class OpenCvVideoEncoderCalculator(CalculatorBase):
+    """
+    use case
+    node {
+      calculator: "OpenCvVideoEncoderCalculator"
+      input_side_packet: "VIDEO_URL:video_url"
+      output_side_packet: "VIDEO_INFO:video_info"
+      output_stream: "VIDEO:img_raw"
+    }
+    """
+    def parse_video_url(self, url):
+        try:
+            url = int(url)
+            logger.info('parse url %s to integer', url)
+        except ValueError:
+            logger.info('try parse %s to integer failed', url)
+        return url
 
     def open(self, cc: CalculatorContext):
         dynamic_import()
-        self.url = 0
+        VIDEO_URL_PACKET = cc.input_side_packets().tag("VIDEO_URL")
+        self.url = 0 if VIDEO_URL_PACKET.get() is None else self.parse_video_url(VIDEO_URL_PACKET.get())
         self.cap = cv2.VideoCapture(self.url)
         fps = self.cap.get(cv2.CAP_PROP_FPS)
         width = self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)

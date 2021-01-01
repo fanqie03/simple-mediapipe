@@ -4,7 +4,7 @@ output_side_packet: "DEMO_OUT:demo_out"
 
 node {
   calculator: "OpenCvVideoEncoderCalculator"
-  input_side_packet: "URL:url"
+  input_side_packet: "VIDEO_URL:video_url"
   output_side_packet: "VIDEO_INFO:video_info"
   output_stream: "VIDEO:img_raw"
 }
