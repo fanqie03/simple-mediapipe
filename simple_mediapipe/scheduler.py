@@ -163,7 +163,7 @@ class Scheduler:
     def is_pause(self):...
     def is_terminated(self):...
 
-    def set_queues_running(self, running):
+    def set_queues_running(self, running: bool):
         self.running = True
         for queue in self._scheduler_queues:
             queue.set_running(running)

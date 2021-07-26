@@ -19,7 +19,7 @@ class StreamType:
 
 
 class Stream:
-    def __init__(self, stream_type, tag_index_name, downstream=None, max_size=100):
+    def __init__(self, stream_type: "StreamType", tag_index_name: str, downstream=None, max_size: int=100):
         self.max_size = max_size
         self._queue = List(self.max_size)
         # single callback or list of Stream
@@ -34,7 +34,7 @@ class Stream:
     def add_packet(self, packet: Packet):
         self._queue.push_last(packet)
 
-    def add_downstream(self, downstream):
+    def add_downstream(self, downstream: "Stream"):
         logger.info('stream <%s> add downstream <%s>', self, downstream)
         if isinstance(downstream, (MethodType, FunctionType)) and self.downstream is None:
             self.downstream = downstream

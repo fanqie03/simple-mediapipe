@@ -135,7 +135,7 @@ class CalculatorContext:
     // inside of through a number of accessor functions: Inputs(), Outputs(),
     // InputSidePackets(), Options(), etc.
     """
-    def __init__(self, node: CalculatorNode):
+    def __init__(self, node: "CalculatorNode"):
         # mirror of calculator inputs
         self.input_stream_shards = copy.deepcopy(node.input_streams)
         # mirror of calculator outputs
@@ -167,17 +167,17 @@ class CalculatorBase:
         self._options = None
 
     @staticmethod
-    def get_contract(cc: CalculatorContext):
+    def get_contract(cc: "CalculatorContext"):
         """检查graph的配置是否符合要求"""
         return True
 
-    def open(self, cc: CalculatorContext):
+    def open(self, cc: "CalculatorContext"):
         """初始化改Calculator"""
 
-    def process(self, cc: CalculatorContext):
+    def process(self, cc: "CalculatorContext"):
         """处理"""
 
-    def close(self, cc: CalculatorContext):
+    def close(self, cc: "CalculatorContext"):
         """释放资源"""
 
     def __str__(self):

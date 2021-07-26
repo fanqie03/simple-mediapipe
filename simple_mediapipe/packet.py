@@ -1,4 +1,5 @@
 import time
+from typing import Union, Dict
 from logzero import logger
 from .tool import parse_tag_index_name
 
@@ -7,7 +8,13 @@ class Packet:
 
     _static_id = 0
 
-    def __init__(self, data=None, timestamp=None, tag_index_name=None, packet_type=None):
+    def __init__(
+            self,
+             data=Union[None, Dict],
+             timestamp=Union[None, float],
+             tag_index_name=Union[None, str],
+             packet_type=Union[None, "StreamType"]
+         ):
         # timestamp default unit is milli seconds
         self.data = data
         self.timestamp = timestamp or time.time()
