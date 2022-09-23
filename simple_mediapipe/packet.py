@@ -10,10 +10,10 @@ class Packet:
 
     def __init__(
             self,
-             data=Union[None, Dict],
-             timestamp=Union[None, float],
-             tag_index_name=Union[None, str],
-             packet_type=Union[None, "StreamType"]
+            data: Union[None, Dict] = None,
+            timestamp: Union[None, float] = None,
+            tag_index_name: Union[None, str] = None,
+            packet_type: Union[None, "StreamType"] = None,
          ):
         # timestamp default unit is milli seconds
         self.data = data
